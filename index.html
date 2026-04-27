@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>mDowód v2.0</title>
+    <style>
+        :root { --blue-ui: #0046ad; --text-dark: #1c1c1e; --label-gray: #8e8e93; }
+        body { margin: 0; background: #f2f2f7; font-family: -apple-system, sans-serif; user-select: none; }
+
+        /* Pasek stanu - góra */
+        .header { background: white; padding: 45px 20px 15px; border-bottom: 1px solid #d1d1d6; display: flex; align-items: center; justify-content: space-between; }
+        .back-arrow { color: var(--blue-ui); font-size: 24px; font-weight: bold; }
+
+        /* Karta Dowodu */
+        .card-container { margin: 15px; perspective: 1000px; }
+        .card { 
+            background: white; border-radius: 16px; padding: 18px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); position: relative; overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Hologram reagujący na ruch */
+        .hologram {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: repeating-linear-gradient(135deg, transparent, rgba(0,70,173,0.04) 10px, transparent 20px);
+            z-index: 1; pointer-events: none;
+        }
+
+        /* Sekcja danych */
+        .main-row { display: flex; z-index: 2; position: relative; }
+        .photo { width: 105px; height: 135px; background: #e5e5ea; border-radius: 8px; overflow: hidden; margin-right: 15px; }
+        .info-col { flex: 1; }
+        .field { margin-bottom: 10px; }
+        .label { color: var(--label-gray); font-size: 10px; text-transform: uppercase; font-weight: 600; }
+        .value { color: var(--text-dark); font-size: 15px; font-weight: 700; margin-top: 2px; }
+
+        /* Zegar czasu rzeczywistego - KLUCZ DO REALIZMU */
+        .timestamp { 
+            background: #f2f2f7; border-radius: 10px; padding: 10px; 
+            margin-top: 15px; text-align: center; font-size: 13px; color: #3a3a3c;
+            border: 1px solid #e5e5ea;
+        }
+
+        /* Orzełek w tle (pływający) */
+        .eagle { 
+            position: absolute; bottom: -10px; right: -10px; width: 100px; 
+            opacity: 0.05; transform: rotate(-15deg); z-index: 0;
+        }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-sizing: border-box; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .btn-update { background: var(--blue-ui); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: 600; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="back-arrow">〈</div>
+    <div style="font-weight: 700; font-size: 17px;">mDowód</div>
+    <div style="width: 24px;"></div>
+</div>
+
+<div class="card-container">
+    <div class="card" id="main-card">
+        <div class="hologram" id="hologram"></div>
+        <div class="main-row">
+            <div class="photo">
+                <img src="https://via.placeholder.com/105x135?text=FOTO" style="width:100%; filter: grayscale(20%);">
+            </div>
+            <div class="info-col">
+                <div class="field"><div class="label">Nazwisko</div><div class="value" id="s">KOWALSKI</div></div>
+                <div class="field"><div class="label">Imię (imiona)</div><div class="value" id="n">JAN ADAM</div></div>
+                <div class="field"><div class="label">Numer PESEL</div><div class="value" id="p">01234567890</div></div>
+                <div class="field"><div class="label">Obywatelstwo</div><div class="value">POLSKIE</div></div>
+            </div>
+        </div>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Coat_of_arms_of_Poland.svg" class="eagle">
+    </div>
+
+    <div class="timestamp" id="clock">
+        Czas: 27.04.2026 17:20:01
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <button class="btn-update" onclick="edit()">Edytuj dane do testu</button>
+</div>
+
+<script>
+    // Zegar czasu rzeczywistego
+    function updateClock() {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('pl-PL');
+        const timeStr = now.toLocaleTimeString('pl-PL');
+        document.getElementById('clock').innerText = `Ostatnia aktualizacja: ${dateStr} ${timeStr}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Reakcja na ruch telefonem (Hologram)
+    window.addEventListener('deviceorientation', (event) => {
+        const holo = document.getElementById('hologram');
+        const x = event.beta;  
+        const y = event.gamma; 
+        holo.style.transform = `translate(${y * 2}px, ${x * 2}px)`;
+    });
+
+    function edit() {
+        const name = prompt("Imię:");
+        const sur = prompt("Nazwisko:");
+        const pes = prompt("PESEL:");
+        if(name) document.getElementById('n').innerText = name.toUpperCase();
+        if(sur) document.getElementById('s').innerText = sur.toUpperCase();
+        if(pes) document.getElementById('p').innerText = pes;
+    }
+</script>
+
+</body>
+</html>
