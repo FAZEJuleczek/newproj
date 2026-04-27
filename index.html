@@ -3,201 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>mObywatel 2.0 - Prototyp</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>mObywatel 2.0</title>
     <style>
         :root {
-            --gov-blue: #0052a5;
-            --bg-light: #f6f7fb;
-            --card-white: #ffffff;
+            --bg-gray: #f2f3f7;
+            --gov-blue: #0046ad;
             --text-main: #1c1c1e;
-            --text-muted: #8e8e93;
+            --text-gray: #6e6e73;
+            --green: #40914c;
         }
+        * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
+        body { margin: 0; background: var(--bg-gray); color: var(--text-main); padding-bottom: 90px; }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--bg-light); color: var(--text-main); overflow: hidden; height: 100vh; }
+        /* Górny pasek */
+        .header { background: white; padding: 45px 15px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid #d1d1d6; }
+        .back { color: var(--gov-blue); font-weight: 600; cursor: pointer; }
+        .time-header { text-align: center; font-size: 11px; color: var(--text-gray); margin-top: 10px; }
 
-        /* Nawigacja stron */
-        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.3s ease; background: var(--bg-light); z-index: 1; }
-        .page-hidden { transform: translateX(100%); }
-        .page-active { transform: translateX(0); z-index: 10; }
-
-        /* Dashboard (Ekran Start) */
-        .header { padding: 50px 20px 20px; display: flex; justify-content: space-between; align-items: center; background: white; }
-        .user-greeting { font-size: 22px; font-weight: 800; }
-        .scroll-area { height: calc(100vh - 160px); overflow-y: auto; padding: 20px; }
-
-        /* Kafelki Dashboardu */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .tile { background: var(--card-white); border-radius: 20px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; }
-        .tile svg { width: 40px; height: 40px; margin-bottom: 10px; }
-        .tile-label { font-weight: 600; font-size: 14px; }
-        .tile-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-
-        /* Widok Dokumentu (mDowód) */
-        .doc-header { padding: 50px 20px 15px; background: white; display: flex; align-items: center; border-bottom: 1px solid #ddd; }
-        .back-btn { font-size: 24px; color: var(--gov-blue); margin-right: 20px; cursor: pointer; }
+        /* Karta mDowód */
+        .id-container { margin: 15px; background: linear-gradient(135deg, #e1f0ff 0%, #ffffff 100%); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; }
+        .eagle-bg { position: absolute; right: -10%; bottom: -5%; width: 70%; opacity: 0.1; z-index: 0; }
         
-        .id-card-wrapper { padding: 20px; }
-        .id-card { 
-            background: white; border-radius: 25px; padding: 20px; position: relative; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05);
-        }
+        .card-body { padding: 20px; display: flex; position: relative; z-index: 1; }
+        .photo-side { width: 100px; margin-right: 15px; }
+        .photo { width: 100px; height: 130px; background: #ddd; border-radius: 10px; filter: grayscale(1); margin-bottom: 15px; }
+        .flag-rp { width: 50px; height: 30px; background: linear-gradient(white 50%, #e30613 50%); border: 0.5px solid #ccc; border-radius: 3px; }
 
-        /* Zabezpieczenia wizualne */
-        .glass-shimmer {
-            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(135deg, transparent 45%, rgba(255,255,255,0.4) 50%, transparent 55%);
-            animation: shimmer 4s infinite linear; pointer-events: none; z-index: 5;
-        }
-        @keyframes shimmer { 0% { transform: translate(-20%, -20%); } 100% { transform: translate(20%, 20%); } }
+        .data-side { flex: 1; }
+        .field { margin-bottom: 12px; }
+        .val { font-size: 16px; font-weight: 800; display: block; }
+        .lab { font-size: 10px; color: var(--text-gray); text-transform: none; }
 
-        .waves-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 10% 20%, rgba(0,82,165,0.03) 0%, transparent 40%);
-            opacity: 0.5; z-index: 0;
-        }
+        /* Status Ważny */
+        .status-box { background: white; margin: -10px 15px 15px; padding: 12px 20px; border-radius: 15px; display: flex; align-items: center; color: var(--green); font-weight: 700; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .check-icon { width: 20px; height: 20px; background: var(--green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; }
 
-        .card-content { display: flex; position: relative; z-index: 2; }
-        .photo-frame { width: 110px; height: 140px; background: #eee; border-radius: 15px; margin-right: 15px; overflow: hidden; }
-        .photo-frame img { width: 100%; height: 100%; filter: grayscale(100%); }
+        /* Ikony akcji */
+        .action-row { display: flex; justify-content: space-around; padding: 0 10px; margin-bottom: 20px; }
+        .act { text-align: center; width: 22%; }
+        .act-icon { background: white; width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); color: var(--gov-blue); }
+        .act-label { font-size: 9px; font-weight: 600; color: #444; line-height: 1.2; }
 
-        .data-fields { flex: 1; }
-        .data-item { margin-bottom: 8px; }
-        .d-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
-        .d-value { font-size: 15px; font-weight: 800; }
+        /* Bloki danych na dole */
+        .data-section { background: white; margin: 15px; border-radius: 15px; padding: 15px; }
+        .data-row { border-bottom: 0.5px solid #eee; padding: 12px 0; position: relative; }
+        .data-row:last-child { border: none; }
+        .copy-btn { position: absolute; right: 0; top: 15px; background: #eef2ff; color: var(--gov-blue); padding: 5px 12px; border-radius: 15px; font-size: 11px; font-weight: bold; }
 
-        .time-box { 
-            background: #f0f2f8; border-radius: 12px; margin-top: 15px; padding: 10px; 
-            text-align: center; font-size: 12px; font-weight: 600; color: #444;
-        }
-
-        /* Dolny pasek nawigacji */
-        .bottom-nav { 
-            position: fixed; bottom: 0; width: 100%; height: 80px; background: white; 
-            border-top: 1px solid #ddd; display: flex; justify-content: space-around; align-items: center; z-index: 100;
-        }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); cursor: pointer; }
+        /* Dolne Menu */
+        .footer { position: fixed; bottom: 0; width: 100%; background: white; height: 80px; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #ccc; padding-bottom: 10px; }
+        .nav-item { text-align: center; color: var(--text-gray); font-size: 10px; font-weight: 600; }
         .nav-item.active { color: var(--gov-blue); }
-        .nav-item span { font-size: 10px; margin-top: 4px; font-weight: 600; }
-        .nav-item svg { width: 24px; height: 24px; }
 
-        /* Dodatkowe sekcje (Recepty, Punkty) */
-        .simple-list { background: white; border-radius: 20px; padding: 15px; margin-top: 10px; }
-        .list-item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; }
-        .qr-mock { width: 40px; height: 40px; background: #000; border: 4px solid #fff; box-shadow: 0 0 2px #000; }
+        /* Animacja hologramu */
+        .hologram { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%); animation: h-move 5s infinite; pointer-events: none; }
+        @keyframes h-move { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
     </style>
 </head>
 <body>
 
-    <div id="page-start" class="page page-active">
-        <div class="header">
-            <div class="user-greeting">Witaj, Jan</div>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--gov-blue)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        </div>
-        <div class="scroll-area">
-            <div class="grid">
-                <div class="tile" onclick="openDoc()">
-                    <svg viewBox="0 0 24 24" fill="var(--gov-blue)"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
-                    <div class="tile-label">mDowód</div>
-                    <div class="tile-sub">Dokument tożsamości</div>
+    <div class="header">
+        <div class="back">〈 Wróć</div>
+        <div style="font-weight: 700;">mDowód</div>
+        <div style="font-size: 20px;">?</div>
+    </div>
+
+    <div class="time-header">
+        Czas: <span id="current-time"></span>
+    </div>
+
+    <div class="id-container">
+        <div class="hologram"></div>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Coat_of_arms_of_Poland.svg" class="eagle-bg">
+        <div class="card-body">
+            <div class="photo-side">
+                <div class="photo">
+                    <img src="https://via.placeholder.com/100x130?text=MARTA" style="width:100%; border-radius:10px;">
                 </div>
-                <div class="tile" onclick="alert('Punkty: 12')">
-                    <svg viewBox="0 0 24 24" fill="#f44336"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                    <div class="tile-label">Punkty karne</div>
-                    <div class="tile-sub">Stan: 12 pkt</div>
-                </div>
-                <div class="tile">
-                    <svg viewBox="0 0 24 24" fill="#4caf50"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                    <div class="tile-label">E-recepty</div>
-                    <div class="tile-sub">3 nowe recepty</div>
-                </div>
-                <div class="tile">
-                    <svg viewBox="0 0 24 24" fill="#ff9800"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1s1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-                    <div class="tile-label">Pojazdy</div>
-                    <div class="tile-sub">Audi A4 • KR 12345</div>
-                </div>
+                <div class="flag-rp"></div>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Coat_of_arms_of_Poland.svg" style="width: 30px; margin-top: 10px; opacity: 0.5;">
+            </div>
+            <div class="data-side">
+                <div class="field"><span class="val">MARTA</span><span class="lab">Imię (imiona)</span></div>
+                <div class="field"><span class="val">KOWALSKA</span><span class="lab">Nazwisko</span></div>
+                <div class="field"><span class="val">POLSKIE</span><span class="lab">Obywatelstwo</span></div>
+                <div class="field"><span class="val">14.07.1991</span><span class="lab">Data urodzenia</span></div>
+                <div class="field"><span class="val">91071427765</span><span class="lab">Numer PESEL</span></div>
             </div>
         </div>
     </div>
 
-    <div id="page-doc" class="page page-hidden">
-        <div class="doc-header">
-            <div class="back-btn" onclick="closeDoc()">〈</div>
-            <div style="font-weight: 700; font-size: 18px;">mDowód</div>
+    <div class="status-box">
+        <div class="check-icon">✓</div>
+        Dokument ważny
+    </div>
+
+    <div class="action-row">
+        <div class="act"><div class="act-icon">🔍</div><div class="act-label">Potwierdź<br>swoje dane</div></div>
+        <div class="act"><div class="act-icon">📄</div><div class="act-label">Dane dowodu<br>osobistego</div></div>
+        <div class="act"><div class="act-icon">🛡️</div><div class="act-label">Zastrzeż<br>PESEL</div></div>
+        <div class="act"><div class="act-icon">...</div><div class="act-label">Pozostałe<br>skróty</div></div>
+    </div>
+
+    <div class="data-section">
+        <div class="data-row">
+            <div class="lab">Seria i numer mDowodu</div>
+            <div class="val">WZAX 80112</div>
+            <div class="copy-btn">Kopiuj</div>
         </div>
-        <div class="id-card-wrapper">
-            <div class="id-card">
-                <div class="glass-shimmer"></div>
-                <div class="waves-bg"></div>
-                <div class="card-content">
-                    <div class="photo-frame">
-                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQMAAAD58POIAAAABlBMVEUAAAD///+l2Z/dAAABF0lEQVQoz2P4DwYH+AFGIAIkA6OBCP6D8YF4YDQRAU8wPhBPRMATjA/EE8QCXjA+EE8QC3jB+EA8QSzgBeMD8QSxgBeMD8QTfMBYIAj+Y8YCoXfM6AnYf8xoCf5jRpsP5gNiPiCW/2D6AfE9EP8D8T0Q/wPxPRD/A/E9EP8D8T0Q/wPxPRD/Y8YCAfwHzAcZfDBjgf7vO2Y0B6x3zGgO+O+Y0Rzw3zGjOaA3YH8C3A8y+GDGAv3fd8xoDljvmNEc8N8xo00A9/0YfDBjAW73YvABYvH/YH4A4n8gfADifyB8AOJ/IHwA4n8gfADifyB8AOJ/IHwA4n8gfADifyB8AOJ/IHwA4m8gfgZpPwAA77063S6DdgAAAABJRU5ErkJggg==" alt="Jan Kowalski">
-                    </div>
-                    <div class="data-fields">
-                        <div class="data-item"><div class="d-label">Nazwisko</div><div class="d-value">KOWALSKI</div></div>
-                        <div class="data-item"><div class="d-label">Imię (imiona)</div><div class="d-value">JAN ADAM</div></div>
-                        <div class="data-item"><div class="d-label">PESEL</div><div class="d-value">85010112345</div></div>
-                        <div class="data-item"><div class="d-label">Numer dokumentu</div><div class="d-value">ABC 123456</div></div>
-                    </div>
-                </div>
-                <div class="time-box" id="id-time">Weryfikacja: 27.04.2026 18:00:01</div>
-            </div>
+        <div class="data-row">
+            <div class="lab">Termin ważności mDowodu</div>
+            <div class="val">14.07.2028</div>
+        </div>
+        <div class="data-row">
+            <div class="lab">Imię ojca</div>
+            <div class="val">Tomasz</div>
+        </div>
+        <div class="data-row">
+            <div class="lab">Imię matki</div>
+            <div class="val">Zofia</div>
         </div>
     </div>
 
-    <div class="bottom-nav">
-        <div class="nav-item active">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            <span>Start</span>
-        </div>
-        <div class="nav-item">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-            <span>Dokumenty</span>
-        </div>
-        <div class="nav-item">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-8h14V7H7v2z"/></svg>
-            <span>Usługi</span>
-        </div>
-        <div class="nav-item">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-            <span>Więcej</span>
-        </div>
+    <div class="footer">
+        <div class="nav-item active">🏠<br>Dokumenty</div>
+        <div class="nav-item">📂<br>Usługi</div>
+        <div class="nav-item">🔳<br>Kod QR</div>
+        <div class="nav-item">⚙️<br>Więcej</div>
     </div>
 
     <script>
-        // Zarządzanie nawigacją (SPA)
-        function openDoc() {
-            document.getElementById('page-doc').classList.add('page-active');
-            document.getElementById('page-doc').classList.remove('page-hidden');
-        }
-
-        function closeDoc() {
-            document.getElementById('page-doc').classList.add('page-hidden');
-            document.getElementById('page-doc').classList.remove('page-active');
-        }
-
-        // Real-time Clock
-        function updateClock() {
-            const clockEl = document.getElementById('id-time');
+        function updateTime() {
             const now = new Date();
-            const dateStr = now.toLocaleDateString('pl-PL');
             const timeStr = now.toLocaleTimeString('pl-PL');
-            clockEl.innerText = `Ostatnia aktualizacja: ${dateStr} ${timeStr}`;
+            const dateStr = now.toLocaleDateString('pl-PL');
+            document.getElementById('current-time').innerText = timeStr + ' ' + dateStr;
         }
-
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // Symulacja aktywnego paska (Start jest domyślny)
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.onclick = () => {
-                navItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-            };
-        });
+        setInterval(updateTime, 1000);
+        updateTime();
     </script>
+
 </body>
 </html>
