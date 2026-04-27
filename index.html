@@ -5,81 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>mObywatel 2.0</title>
     <style>
-        body { margin: 0; background: #F5F6FA; font-family: sans-serif; }
-        
-        /* Górny pasek z flagą - teraz identyczny */
-        .top-bar {
-            background: white; padding: 45px 20px 15px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid #E5E5E5;
+        :root {
+            --bg-gray: #f5f6fb;
+            --blue-gov: #0046ad;
+            --text-black: #1c1c1e;
+            --text-gray: #7a7a7a;
         }
-        .flag { width: 35px; height: 22px; background: linear-gradient(#fff 50%, #dc2626 50%); border: 1px solid #ddd; }
+        body { margin: 0; background: var(--bg-gray); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        /* Górny pasek */
+        .nav-bar {
+            background: white; padding: 45px 16px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid #d1d1d6;
+        }
+        .back-icon { color: var(--blue-gov); font-size: 22px; font-weight: bold; width: 40px; }
+        .title { font-size: 17px; font-weight: 600; color: #000; }
+        .flag { width: 34px; height: 21px; border-radius: 2px; border: 0.5px solid #ddd; background: linear-gradient(white 50%, #dc2626 50%); }
 
         /* Karta mDowodu */
+        .id-container { margin: 16px; position: relative; }
         .id-card {
-            background: white; margin: 15px; border-radius: 20px;
-            padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            position: relative; overflow: hidden;
+            background: white; border-radius: 24px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);
         }
         
-        .id-card::before { /* Ten specyficzny wzorek w tle */
+        /* Gilosz w tle (zabezpieczenie) */
+        .id-card::after {
             content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/cubes.png');
-            opacity: 0.03; pointer-events: none;
+            background: url('https://www.transparenttextures.com/patterns/wave-grid.png');
+            opacity: 0.05; pointer-events: none; z-index: 1;
         }
 
-        .row { display: flex; align-items: flex-start; }
+        .row { display: flex; position: relative; z-index: 2; }
         
-        .photo-area {
-            width: 110px; height: 145px; background: #E8E8E8;
-            border-radius: 12px; margin-right: 20px; position: relative;
+        .photo-box {
+            width: 105px; height: 135px; background: #e5e5ea; border-radius: 12px;
+            margin-right: 16px; overflow: hidden; border: 0.5px solid #ddd;
         }
+        .photo-box img { width: 100%; height: 100%; filter: grayscale(100%) contrast(1.1); }
 
-        .data-area { flex: 1; }
-        
+        .details { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .field { margin-bottom: 8px; }
-        .label { color: #888; font-size: 10px; text-transform: uppercase; font-weight: bold; }
-        .value { color: #222; font-size: 15px; font-weight: 800; }
+        .label { color: var(--text-gray); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .value { color: var(--text-black); font-size: 16px; font-weight: 800; line-height: 1.2; }
 
-        /* Pasek czasu na dole karty */
-        .status-time {
-            background: #F0F2F8; border-radius: 10px; padding: 8px;
-            margin-top: 15px; font-size: 11px; text-align: center; color: #444;
+        /* Pasek odświeżania */
+        .update-box {
+            background: #ededf2; border-radius: 12px; padding: 10px; margin-top: 16px;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; color: #444; font-weight: 500;
         }
+        .refresh-icon { width: 16px; margin-right: 8px; opacity: 0.6; }
 
-        /* Dolne menu przycisków */
-        .menu-item {
-            background: white; margin: 0 15px 10px; padding: 15px;
-            border-radius: 15px; display: flex; align-items: center;
-            border: 1px solid #eee;
-        }
+        /* Przycisk edycji (tylko do testów) */
+        .edit-btn { margin: 20px 16px; background: var(--blue-gov); color: white; border: none; width: calc(100% - 32px); padding: 16px; border-radius: 12px; font-weight: 600; font-size: 16px; }
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <span>〈</span>
-        <span style="font-weight: bold;">mDowód</span>
-        <div class="flag"></div>
-    </div>
 
+<div class="nav-bar">
+    <div class="back-icon">〈</div>
+    <div class="title">mDowód</div>
+    <div class="flag"></div>
+</div>
+
+<div class="id-container">
     <div class="id-card">
         <div class="row">
-            <div class="photo-area">
-                <div style="position: absolute; bottom: 5px; right: 5px; opacity: 0.2;">🇵🇱</div>
+            <div class="photo-box">
+                <img src="https://via.placeholder.com/105x135/ccc/999?text=FOTO" id="photo-src">
             </div>
-            <div class="data-area">
-                <div class="field"><div class="label">Nazwisko</div><div class="value">KOWALSKI</div></div>
-                <div class="field"><div class="label">Imię (imiona)</div><div class="value">JAN ADAM</div></div>
+            <div class="details">
+                <div class="field"><div class="label">Nazwisko</div><div class="value" id="v-sur">KOWALSKI</div></div>
+                <div class="field"><div class="label">Imię (imiona)</div><div class="value" id="v-name">JAN ADAM</div></div>
                 <div class="field"><div class="label">Obywatelstwo</div><div class="value">POLSKIE</div></div>
-                <div class="field"><div class="label">Numer PESEL</div><div class="value">01234567890</div></div>
+                <div class="field"><div class="label">PESEL</div><div class="value" id="v-pesel">01234567890</div></div>
             </div>
         </div>
-        <div class="status-time">Ostatnia aktualizacja: 27.04.2026 17:35:12</div>
+        <div class="update-box">
+            <span class="refresh-icon">🔄</span>
+            Ostatnia aktualizacja: <span id="time-now"></span>
+        </div>
     </div>
+</div>
 
-    <div class="menu-item">
-        <span style="margin-right: 15px;">👤</span>
-        <span style="font-weight: bold; font-size: 14px;">Potwierdź swoje dane</span>
-    </div>
+<button class="edit-btn" onclick="setup()">Dostosuj dane</button>
+
+<script>
+    function updateTime() {
+        const d = new Date();
+        document.getElementById('time-now').innerText = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    function setup() {
+        const n = prompt("Imię:");
+        const s = prompt("Nazwisko:");
+        const p = prompt("PESEL:");
+        if(n) document.getElementById('v-name').innerText = n.toUpperCase();
+        if(s) document.getElementById('v-sur').innerText = s.toUpperCase();
+        if(p) document.getElementById('v-pesel').innerText = p;
+    }
+</script>
+
 </body>
 </html>
