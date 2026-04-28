@@ -2,146 +2,265 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>mObywatel 2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Identity Manager PRO</title>
     <style>
         :root {
-            --bg-gray: #f2f3f7;
-            --gov-blue: #0046ad;
-            --text-main: #1c1c1e;
-            --text-gray: #6e6e73;
-            --green: #40914c;
+            --primary: #0052a5;
+            --bg: #f2f2f7;
+            --card: #ffffff;
+            --text: #1c1c1e;
+            --text-sec: #8e8e93;
+            --safe-top: env(safe-area-inset-top);
         }
-        * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
-        body { margin: 0; background: var(--bg-gray); color: var(--text-main); padding-bottom: 90px; }
 
-        /* Górny pasek */
-        .header { background: white; padding: 45px 15px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid #d1d1d6; }
-        .back { color: var(--gov-blue); font-weight: 600; cursor: pointer; }
-        .time-header { text-align: center; font-size: 11px; color: var(--text-gray); margin-top: 10px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg); color: var(--text); overflow: hidden; height: 100vh;
+        }
 
-        /* Karta mDowód */
-        .id-container { margin: 15px; background: linear-gradient(135deg, #e1f0ff 0%, #ffffff 100%); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; }
-        .eagle-bg { position: absolute; right: -10%; bottom: -5%; width: 70%; opacity: 0.1; z-index: 0; }
+        /* --- FRAMEWORK SPA --- */
+        .view {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg); z-index: 1; display: flex; flex-direction: column;
+        }
+        .view-hidden { transform: translateX(100%); }
+        .view-active { transform: translateX(0); z-index: 10; }
+
+        /* --- DASHBOARD --- */
+        header { 
+            padding: calc(var(--safe-top) + 20px) 20px 20px; 
+            background: var(--card); display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { width: 40px; height: 40px; cursor: pointer; }
         
-        .card-body { padding: 20px; display: flex; position: relative; z-index: 1; }
-        .photo-side { width: 100px; margin-right: 15px; }
-        .photo { width: 100px; height: 130px; background: #ddd; border-radius: 10px; filter: grayscale(1); margin-bottom: 15px; }
-        .flag-rp { width: 50px; height: 30px; background: linear-gradient(white 50%, #e30613 50%); border: 0.5px solid #ccc; border-radius: 3px; }
+        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
+        
+        .tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .tile { 
+            background: var(--card); border-radius: 22px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+            align-items: center; transition: transform 0.1s;
+        }
+        .tile:active { transform: scale(0.95); background: #f9f9f9; }
+        .tile svg { width: 32px; height: 32px; margin-bottom: 12px; }
+        .tile b { font-size: 14px; }
 
-        .data-side { flex: 1; }
-        .field { margin-bottom: 12px; }
-        .val { font-size: 16px; font-weight: 800; display: block; }
-        .lab { font-size: 10px; color: var(--text-gray); text-transform: none; }
+        /* --- DOKUMENT (mDowód) --- */
+        .card-wrapper { perspective: 1000px; padding: 10px; }
+        .id-card {
+            width: 100%; height: 220px; background: white; border-radius: 24px;
+            position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.6s; transform-style: preserve-3d;
+        }
+        .id-card.flipped { transform: rotateY(180deg); }
 
-        /* Status Ważny */
-        .status-box { background: white; margin: -10px 15px 15px; padding: 12px 20px; border-radius: 15px; display: flex; align-items: center; color: var(--green); font-weight: 700; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .check-icon { width: 20px; height: 20px; background: var(--green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 12px; }
+        .card-front, .card-back {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            padding: 20px; display: flex;
+        }
+        .card-back { transform: rotateY(180deg); flex-direction: column; align-items: center; justify-content: center; }
 
-        /* Ikony akcji */
-        .action-row { display: flex; justify-content: space-around; padding: 0 10px; margin-bottom: 20px; }
-        .act { text-align: center; width: 22%; }
-        .act-icon { background: white; width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); color: var(--gov-blue); }
-        .act-label { font-size: 9px; font-weight: 600; color: #444; line-height: 1.2; }
+        /* Canvas Background */
+        #guilloche { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.15; }
 
-        /* Bloki danych na dole */
-        .data-section { background: white; margin: 15px; border-radius: 15px; padding: 15px; }
-        .data-row { border-bottom: 0.5px solid #eee; padding: 12px 0; position: relative; }
-        .data-row:last-child { border: none; }
-        .copy-btn { position: absolute; right: 0; top: 15px; background: #eef2ff; color: var(--gov-blue); padding: 5px 12px; border-radius: 15px; font-size: 11px; font-weight: bold; }
+        /* Foto z Shimmerem */
+        .photo-container {
+            width: 100px; height: 130px; border-radius: 12px; overflow: hidden;
+            position: relative; z-index: 2; background: #eee; border: 0.5px solid #ddd;
+        }
+        #display-photo { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); }
+        .shimmer {
+            position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine { 100% { left: 200%; } }
 
-        /* Dolne Menu */
-        .footer { position: fixed; bottom: 0; width: 100%; background: white; height: 80px; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #ccc; padding-bottom: 10px; }
-        .nav-item { text-align: center; color: var(--text-gray); font-size: 10px; font-weight: 600; }
-        .nav-item.active { color: var(--gov-blue); }
+        .data-overlay { flex: 1; padding-left: 15px; z-index: 2; }
+        .field { margin-bottom: 6px; }
+        .f-lab { font-size: 9px; color: var(--text-sec); font-weight: bold; text-transform: uppercase; }
+        .f-val { font-size: 14px; font-weight: 800; }
 
-        /* Animacja hologramu */
-        .hologram { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%); animation: h-move 5s infinite; pointer-events: none; }
-        @keyframes h-move { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        /* --- UKRYTY PANEL ADMINA --- */
+        #admin-panel {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 999; display: none;
+            color: white; padding: 40px 20px; overflow-y: auto;
+        }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; }
+        .close-admin { background: #ff3b30; color: white; padding: 15px; border-radius: 12px; text-align: center; margin-top: 20px; }
+
+        /* --- BOTTOM NAV --- */
+        nav {
+            position: fixed; bottom: 0; width: 100%; height: 85px; background: white;
+            display: flex; justify-content: space-around; padding-top: 10px; border-top: 0.5px solid #d1d1d6; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sec); font-size: 10px; }
+        .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="back">〈 Wróć</div>
-        <div style="font-weight: 700;">mDowód</div>
-        <div style="font-size: 20px;">?</div>
-    </div>
-
-    <div class="time-header">
-        Czas: <span id="current-time"></span>
-    </div>
-
-    <div class="id-container">
-        <div class="hologram"></div>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Coat_of_arms_of_Poland.svg" class="eagle-bg">
-        <div class="card-body">
-            <div class="photo-side">
-                <div class="photo">
-                    <img src="https://via.placeholder.com/100x130?text=MARTA" style="width:100%; border-radius:10px;">
+    <div id="view-main" class="view view-active">
+        <header>
+            <div class="logo" onclick="handleLogoClick()">
+                <svg viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 6c1.4 0 2.5 1.1 2.5 2.5S13.4 12 12 12s-2.5-1.1-2.5-2.5S10.6 7 12 7zm0 14c-2.7 0-5.2-1.5-6.5-3.8.1-1.3 2.6-2.2 6.5-2.2s6.4.9 6.5 2.2c-1.3 2.3-3.8 3.8-6.5 3.8z"/></svg>
+            </div>
+            <b style="font-size: 20px;">Dzień dobry</b>
+            <div style="width:40px"></div>
+        </header>
+        <div class="content">
+            <div class="tile-grid">
+                <div class="tile" onclick="showView('view-doc')">
+                    <svg fill="var(--primary)" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    <b>mDowód</b>
+                    <span style="font-size:10px; color:gray">Tożsamość</span>
                 </div>
-                <div class="flag-rp"></div>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Coat_of_arms_of_Poland.svg" style="width: 30px; margin-top: 10px; opacity: 0.5;">
-            </div>
-            <div class="data-side">
-                <div class="field"><span class="val">MARTA</span><span class="lab">Imię (imiona)</span></div>
-                <div class="field"><span class="val">KOWALSKA</span><span class="lab">Nazwisko</span></div>
-                <div class="field"><span class="val">POLSKIE</span><span class="lab">Obywatelstwo</span></div>
-                <div class="field"><span class="val">14.07.1991</span><span class="lab">Data urodzenia</span></div>
-                <div class="field"><span class="val">91071427765</span><span class="lab">Numer PESEL</span></div>
+                <div class="tile" onclick="alert('Punkty: 0')">
+                    <svg fill="#ff9500" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <b>Punkty Karne</b>
+                    <span style="font-size:10px; color:gray">Aktywne: 0</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="status-box">
-        <div class="check-icon">✓</div>
-        Dokument ważny
+    <div id="view-doc" class="view view-hidden">
+        <header>
+            <div onclick="showView('view-main')" style="color:var(--primary); font-weight:bold; cursor:pointer">〈 Wróć</div>
+            <b style="font-size: 17px;">mDowód</b>
+            <div style="width:40px"></div>
+        </header>
+        <div class="content">
+            <div class="card-wrapper">
+                <div class="id-card" id="idCard" onclick="this.classList.toggle('flipped')">
+                    <div class="card-front">
+                        <canvas id="guilloche"></canvas>
+                        <div class="photo-container">
+                            <img id="display-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+                            <div class="shimmer"></div>
+                        </div>
+                        <div class="data-overlay">
+                            <div class="field"><div class="f-lab">Nazwisko</div><div class="f-val" id="res-sur">KOWALSKI</div></div>
+                            <div class="field"><div class="f-lab">Imię</div><div class="f-val" id="res-name">JAN ADAM</div></div>
+                            <div class="field"><div class="f-lab">PESEL</div><div class="f-val" id="res-pes">85010112345</div></div>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div style="background:black; width:100px; height:100px; padding:5px; background:white; border:1px solid #ccc">
+                            <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 0h2v2h-2v-2zm3 3h3v2h-3v-2zm-3 0h2v2h-2v-2zm3 3h3v2h-3v-2zm-3 0h2v2h-2v-2z"/></svg>
+                        </div>
+                        <p style="font-size:10px; margin-top:10px">KOD QR DO WERYFIKACJI</p>
+                    </div>
+                </div>
+            </div>
+            <div id="clock" style="text-align:center; margin-top:20px; font-weight:bold; color:var(--text-sec); font-size:12px;"></div>
+        </div>
     </div>
 
-    <div class="action-row">
-        <div class="act"><div class="act-icon">🔍</div><div class="act-label">Potwierdź<br>swoje dane</div></div>
-        <div class="act"><div class="act-icon">📄</div><div class="act-label">Dane dowodu<br>osobistego</div></div>
-        <div class="act"><div class="act-icon">🛡️</div><div class="act-label">Zastrzeż<br>PESEL</div></div>
-        <div class="act"><div class="act-icon">...</div><div class="act-label">Pozostałe<br>skróty</div></div>
+    <div id="admin-panel">
+        <h2>Panel Edycji Tożsamości</h2>
+        <input type="text" id="in-name" placeholder="Imię">
+        <input type="text" id="in-sur" placeholder="Nazwisko">
+        <input type="text" id="in-pes" placeholder="PESEL">
+        <p>Wgraj zdjęcie:</p>
+        <input type="file" id="in-photo" accept="image/*">
+        <div class="close-admin" onclick="updateAndClose()">ZAPISZ I ZAMKNIJ</div>
     </div>
 
-    <div class="data-section">
-        <div class="data-row">
-            <div class="lab">Seria i numer mDowodu</div>
-            <div class="val">WZAX 80112</div>
-            <div class="copy-btn">Kopiuj</div>
+    <nav>
+        <div class="nav-item active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Start</span>
         </div>
-        <div class="data-row">
-            <div class="lab">Termin ważności mDowodu</div>
-            <div class="val">14.07.2028</div>
+        <div class="nav-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+            <span>Dokumenty</span>
         </div>
-        <div class="data-row">
-            <div class="lab">Imię ojca</div>
-            <div class="val">Tomasz</div>
-        </div>
-        <div class="data-row">
-            <div class="lab">Imię matki</div>
-            <div class="val">Zofia</div>
-        </div>
-    </div>
-
-    <div class="footer">
-        <div class="nav-item active">🏠<br>Dokumenty</div>
-        <div class="nav-item">📂<br>Usługi</div>
-        <div class="nav-item">🔳<br>Kod QR</div>
-        <div class="nav-item">⚙️<br>Więcej</div>
-    </div>
+    </nav>
 
     <script>
-        function updateTime() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('pl-PL');
-            const dateStr = now.toLocaleDateString('pl-PL');
-            document.getElementById('current-time').innerText = timeStr + ' ' + dateStr;
+        // --- LOGIKA SPA ---
+        function showView(id) {
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.remove('view-active');
+                v.classList.add('view-hidden');
+            });
+            const active = document.getElementById(id);
+            active.classList.remove('view-hidden');
+            active.classList.add('view-active');
         }
-        setInterval(updateTime, 1000);
-        updateTime();
-    </script>
 
+        // --- UKRYTY ADMIN ---
+        let clickCount = 0;
+        function handleLogoClick() {
+            clickCount++;
+            if(clickCount >= 3) {
+                document.getElementById('admin-panel').style.display = 'block';
+                clickCount = 0;
+            }
+            setTimeout(() => clickCount = 0, 2000);
+        }
+
+        function updateAndClose() {
+            const name = document.getElementById('in-name').value;
+            const sur = document.getElementById('in-sur').value;
+            const pes = document.getElementById('in-pes').value;
+            const photoInput = document.getElementById('in-photo');
+
+            if(name) document.getElementById('res-name').innerText = name.toUpperCase();
+            if(sur) document.getElementById('res-sur').innerText = sur.toUpperCase();
+            if(pes) document.getElementById('res-pes').innerText = pes;
+
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('display-photo').src = e.target.result;
+                }
+                reader.readAsDataURL(photoInput.files[0]);
+            }
+
+            document.getElementById('admin-panel').style.display = 'none';
+        }
+
+        // --- ANIMACJA GUILLOCHE (CANVAS) ---
+        const canvas = document.getElementById('guilloche');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resize() {
+            width = canvas.width = canvas.offsetWidth;
+            height = canvas.height = canvas.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let time = 0;
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.strokeStyle = '#0052a5';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            for (let i = 0; i < width; i += 5) {
+                let y = Math.sin(i * 0.02 + time) * 20 + height / 2;
+                ctx.lineTo(i, y);
+            }
+            ctx.stroke();
+            time += 0.05;
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // --- ZEGAR ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = `CZAS: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
 </body>
 </html>
